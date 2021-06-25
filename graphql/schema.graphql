@@ -1,0 +1,44 @@
+type Todo {
+  id: ID!
+  title: String!
+  done: Boolean!
+}
+
+type TodoEvent {
+  id: ID!
+}
+
+enum ACTIONS {
+  CREATE_TODO
+  UPDATE_TODO
+  DELETE_TODO
+}
+
+type GenerateActionOutput {
+  id: ID!
+  title: String!
+  done: Boolean!
+  action: ACTIONS!
+}
+
+type Query {
+  getTodos: [Todo!]!
+}
+
+type Mutation {
+  createTodo(title: String!): TodoEvent!
+  updateTodo(id: ID!, done: Boolean!): TodoEvent!
+  deleteTodo(id: ID!): TodoEvent!
+
+  generateAction(
+    id: ID!
+    title: String!
+    done: Boolean!
+    action: ACTIONS!
+  ): GenerateActionOutput!
+}
+
+type Subscription {
+  onGenerateAction: GenerateActionOutput!
+    @aws_subscribe(mutations: ["generateAction"])
+}
