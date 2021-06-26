@@ -1,36 +1,38 @@
 import { AppSyncResolverHandler } from "aws-lambda";
 import AppSyncEventArguments from "./AppSyncEventArguments";
-import createTodo from "./createTodo";
-import deleteTodo from "./deleteTodo";
-import getTodos from "./getTodos";
 import Todo from "./Todo";
 import TodoEvent from "./TodoEvent";
-import updateTodo from "./updateTodo";
+import getTodos from "./getTodos";
+import generateTodoEvent from "./generateTodoEvent";
 
 export const handler: AppSyncResolverHandler<
   AppSyncEventArguments,
   Todo | TodoEvent
 > = async (event) => {
-  console.log("event: ", JSON.stringify(event.identity, null, 2));
-  console.log("operation name: ", event.info.fieldName);
+  console.log("operation: ", event.info.fieldName);
+  console.log("identity: ", JSON.stringify(event.identity, null, 2));
+  console.log("event: ", JSON.stringify(event, null, 2));
+
   const username = event.identity?.username as string;
+
   switch (event.info.fieldName) {
     case process.env.GQL_OPERATION_GET_TODOS:
-      console.log("getting Todos...");
       return await getTodos(username);
     case process.env.GQL_OPERATION_CREATE_TODO:
-      console.log("creating Todo Event...");
-      return await createTodo(event.arguments.title, username);
+      return await generateTodoEvent(
+        process.env.EVENT_TYPE_CREATE_TODO,
+        JSON.stringify({ ...event.arguments, username }, null, 2)
+      );
     case process.env.GQL_OPERATION_UPDATE_TODO:
-      console.log("updating Todo...");
-      return await updateTodo(
-        event.arguments.id,
-        event.arguments.done,
-        username
+      return await generateTodoEvent(
+        process.env.EVENT_TYPE_UPDATE_TODO,
+        JSON.stringify({ ...event.arguments, username }, null, 2)
       );
     case process.env.GQL_OPERATION_DELETE_TODO:
-      console.log("deleting Todo...");
-      return await deleteTodo(event.arguments.id, username);
+      return await generateTodoEvent(
+        process.env.EVENT_TYPE_DELETE_TODO,
+        JSON.stringify({ ...event.arguments, username }, null, 2)
+      );
     default:
       throw new Error("Query/Mutation/Subscription Not Found");
   }

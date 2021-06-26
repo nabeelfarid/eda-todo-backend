@@ -184,6 +184,11 @@ export class EdaTodoBackendStack extends cdk.Stack {
       ruleName: `${id}_todos_eventbus_rule`,
       eventPattern: {
         source: [eventSourceTodosGqlApi],
+        detailType: [
+          eventTypeCreateTodo,
+          eventTypeUpdateTodo,
+          eventTypeDeleteTodo,
+        ],
       },
       eventBus: bus,
     });

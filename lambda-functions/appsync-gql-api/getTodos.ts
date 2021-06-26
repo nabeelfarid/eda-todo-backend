@@ -20,11 +20,15 @@ const getTodos = async (username: string): Promise<Todo[]> => {
       ScanIndexForward: false,
     };
 
+    console.log("getting Todos...", params);
+
     const data = await docClient.query(params).promise();
-    console.log("getTodos query:", data);
+
+    console.log("getTodos successful:", data);
+
     return data.Items as Todo[];
   } catch (error) {
-    console.log("Dynamo DB Error", error);
+    console.log("getTodos Dynamo DB Error", error);
     throw error;
   }
 };

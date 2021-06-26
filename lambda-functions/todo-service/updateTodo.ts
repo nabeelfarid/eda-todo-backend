@@ -22,8 +22,9 @@ const updateTodo = async (eventDetails: TodoEventDetails): Promise<Todo> => {
     ReturnValues: "ALL_NEW",
   };
 
-  console.log("params: ", JSON.stringify(params, null, 4));
   try {
+    console.log("Updating Todo... params: ", JSON.stringify(params, null, 4));
+
     const updatedTodo = await docClient.update(params).promise();
 
     console.log("Todo updated:", JSON.stringify(updatedTodo, null, 4));
