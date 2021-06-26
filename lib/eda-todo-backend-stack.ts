@@ -159,6 +159,25 @@ export class EdaTodoBackendStack extends cdk.Stack {
       typeName: "Mutation",
     });
 
+    //No DataSource for Mutation for notifying subscribers
+    const appsyncNoDS = appsyncApi.addNoneDataSource("noDataSource", {
+      name: "noDataSource",
+      description: "Does not save incoming data anywhere",
+    });
+
+    /* Mutation for notifying Subscription */
+    appsyncNoDS.createResolver({
+      typeName: "Mutation",
+      fieldName: "generateAction",
+      requestMappingTemplate: appsync.MappingTemplate.fromString(`{
+        "version" : "2017-02-28",
+        "payload": $util.toJson($context.arguments)
+        }`),
+      responseMappingTemplate: appsync.MappingTemplate.fromString(
+        "$util.toJson($context.result)"
+      ),
+    });
+
     events.EventBus.grantAllPutEvents(lambdaGqlApi);
 
     const rule = new events.Rule(this, `${id}_todos_eventbus_rule`, {
@@ -190,58 +209,10 @@ export class EdaTodoBackendStack extends cdk.Stack {
       }
     );
 
-    const appsyncNoDS = appsyncApi.addNoneDataSource("noDataSource", {
-      name: "noDataSource",
-      description: "Does not save incoming data anywhere",
-    });
-
-    /* Mutation also for Subscription */
-    appsyncNoDS.createResolver({
-      typeName: "Mutation",
-      fieldName: "generateAction",
-      requestMappingTemplate: appsync.MappingTemplate.fromString(`{
-        "version" : "2017-02-28",
-        "payload": $util.toJson($context.arguments)
-        }`),
-      responseMappingTemplate: appsync.MappingTemplate.fromString(
-        "$util.toJson($context.result)"
-      ),
-    });
-
     rule.addTarget(new targets.LambdaFunction(lambdaTodoService));
 
     ddbTableTodos.grantFullAccess(lambdaGqlApi);
     ddbTableTodos.grantFullAccess(lambdaTodoService);
-
-    const lambdaTest = new lambda.Function(this, `${id}_lambda_test`, {
-      functionName: `${id}_lambda_test`,
-      runtime: lambda.Runtime.NODEJS_12_X,
-      code: lambda.Code.fromAsset("lambda-functions/test"),
-      handler: "main.handler",
-      environment: {
-        // AWS_REGION: "us-east-2",
-        APPSYNC_GRAPHQLENDPOINT: appsyncApi.graphqlUrl,
-        APPSYNC_API_KEY: appsyncApi.apiKey as string,
-      },
-    });
-
-    const appsynctestNoDS = appsyncApi.addNoneDataSource("noDataSourceTest", {
-      name: "noDataSourceTest",
-      description: "Does not save incoming data anywhere",
-    });
-
-    /* Mutation also for Subscription */
-    appsynctestNoDS.createResolver({
-      typeName: "Mutation",
-      fieldName: "test",
-      requestMappingTemplate: appsync.MappingTemplate.fromString(`{
-        "version" : "2017-02-28",
-        "payload": $util.toJson($context.arguments)
-        }`),
-      responseMappingTemplate: appsync.MappingTemplate.fromString(
-        "$util.toJson($context.result)"
-      ),
-    });
 
     const outputAppsyncUrl = new cdk.CfnOutput(this, "AppSyncUrl", {
       value: appsyncApi.graphqlUrl,
