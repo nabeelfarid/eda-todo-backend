@@ -14,7 +14,7 @@ enum ACTIONS {
   DELETE_TODO
 }
 
-type GenerateActionOutput {
+type GenerateActionOutput @aws_api_key @aws_cognito_user_pools {
   id: ID!
   title: String!
   done: Boolean!
@@ -31,14 +31,17 @@ type Mutation {
   deleteTodo(id: ID!): TodoEvent!
 
   generateAction(
-    id: ID!
-    title: String!
-    done: Boolean!
-    action: ACTIONS!
-  ): GenerateActionOutput!
+    id: ID
+    title: String
+    done: Boolean
+    action: ACTIONS
+  ): GenerateActionOutput @aws_api_key @aws_cognito_user_pools
+
+  test(value: String!): String @aws_api_key @aws_cognito_user_pools
 }
 
 type Subscription {
-  onGenerateAction: GenerateActionOutput!
+  onGenerateAction: GenerateActionOutput
     @aws_subscribe(mutations: ["generateAction"])
+  onTest: String! @aws_subscribe(mutations: ["test"])
 }

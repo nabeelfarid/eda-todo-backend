@@ -1,13 +1,10 @@
 import * as AWS from "aws-sdk";
 import * as crypto from "crypto";
 import TodoEventDetails from "./TodoEventDetails";
-import * as mutations from "./graphql/mutations";
-import { API, graphqlOperation, Amplify } from "aws-amplify";
-import awsmobile from "./aws-exports";
-import { ACTIONS } from "./API";
+// import * as mutations from "./graphql/mutations";
+// import { ACTIONS } from "./API";
 
-var docClient = new AWS.DynamoDB.DocumentClient();
-Amplify.configure(awsmobile);
+const docClient = new AWS.DynamoDB.DocumentClient();
 
 const createTodo = async (eventDetails: TodoEventDetails) => {
   const todo = {
@@ -23,22 +20,23 @@ const createTodo = async (eventDetails: TodoEventDetails) => {
       })
       .promise();
     console.log("New Todo created:", JSON.stringify(todo, null, 4));
+    return todo;
   } catch (error) {
     console.log("Dynamo DB Error", error);
     throw error;
   }
 
-  try {
-    await API.graphql(
-      graphqlOperation(mutations.generateAction, {
-        ...todo,
-        action: ACTIONS.CREATE_TODO,
-      })
-    );
-  } catch (error) {
-    console.error("GenerateAction Create: ", error);
-    throw error;
-  }
+  // try {
+  //   await API.graphql(
+  //     graphqlOperation(mutations.generateAction, {
+  //       ...todo,
+  //       action: ACTIONS.CREATE_TODO,
+  //     })
+  //   );
+  // } catch (error) {
+  //   console.error("GenerateAction Create: ", error);
+  //   throw error;
+  // }
 };
 
 export default createTodo;

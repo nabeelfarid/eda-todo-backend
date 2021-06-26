@@ -174,7 +174,7 @@ export class EdaTodoBackendStack extends cdk.Stack {
       `${id}_lambda_todo_service`,
       {
         functionName: `${id}_lambda_todo_service`,
-        runtime: lambda.Runtime.NODEJS_14_X,
+        runtime: lambda.Runtime.NODEJS_12_X,
         code: lambda.Code.fromAsset("lambda-functions/todo-service"),
         handler: "main.handler",
         environment: {
@@ -183,7 +183,7 @@ export class EdaTodoBackendStack extends cdk.Stack {
           EVENT_TYPE_DELETE_TODO: eventTypeDeleteTodo,
           TODOS_TABLE: ddbTableTodos.tableName,
           TODOS_TABLE_LOCAL_INDEX_CREATED: indexName,
-          AWS_REGION: "us-east-2",
+          // AWS_REGION: "us-east-2",
           APPSYNC_GRAPHQLENDPOINT: appsyncApi.graphqlUrl,
           APPSYNC_API_KEY: appsyncApi.apiKey as string,
         },
@@ -213,8 +213,42 @@ export class EdaTodoBackendStack extends cdk.Stack {
     ddbTableTodos.grantFullAccess(lambdaGqlApi);
     ddbTableTodos.grantFullAccess(lambdaTodoService);
 
+    const lambdaTest = new lambda.Function(this, `${id}_lambda_test`, {
+      functionName: `${id}_lambda_test`,
+      runtime: lambda.Runtime.NODEJS_12_X,
+      code: lambda.Code.fromAsset("lambda-functions/test"),
+      handler: "main.handler",
+      environment: {
+        // AWS_REGION: "us-east-2",
+        APPSYNC_GRAPHQLENDPOINT: appsyncApi.graphqlUrl,
+        APPSYNC_API_KEY: appsyncApi.apiKey as string,
+      },
+    });
+
+    const appsynctestNoDS = appsyncApi.addNoneDataSource("noDataSourceTest", {
+      name: "noDataSourceTest",
+      description: "Does not save incoming data anywhere",
+    });
+
+    /* Mutation also for Subscription */
+    appsynctestNoDS.createResolver({
+      typeName: "Mutation",
+      fieldName: "test",
+      requestMappingTemplate: appsync.MappingTemplate.fromString(`{
+        "version" : "2017-02-28",
+        "payload": $util.toJson($context.arguments)
+        }`),
+      responseMappingTemplate: appsync.MappingTemplate.fromString(
+        "$util.toJson($context.result)"
+      ),
+    });
+
     const outputAppsyncUrl = new cdk.CfnOutput(this, "AppSyncUrl", {
       value: appsyncApi.graphqlUrl,
+    });
+
+    const outputAppsyncApiKey = new cdk.CfnOutput(this, "AppSyncApiKey", {
+      value: appsyncApi.apiKey as string,
     });
 
     const outputUserPoolId = new cdk.CfnOutput(this, "UserPoolId", {
