@@ -25,18 +25,6 @@ const createTodo = async (eventDetails: TodoEventDetails) => {
     console.log("Dynamo DB Error", error);
     throw error;
   }
-
-  // try {
-  //   await API.graphql(
-  //     graphqlOperation(mutations.generateAction, {
-  //       ...todo,
-  //       action: ACTIONS.CREATE_TODO,
-  //     })
-  //   );
-  // } catch (error) {
-  //   console.error("GenerateAction Create: ", error);
-  //   throw error;
-  // }
 };
 
 export default createTodo;

@@ -1,8 +1,9 @@
 import * as AWS from "aws-sdk";
+import Todo from "./Todo";
 import TodoEventDetails from "./TodoEventDetails";
 var docClient = new AWS.DynamoDB.DocumentClient();
 
-const deleteTodo = async (eventDetails: TodoEventDetails) => {
+const deleteTodo = async (eventDetails: TodoEventDetails): Promise<Todo> => {
   try {
     var deletedTodo = await docClient
       .delete({
@@ -12,6 +13,7 @@ const deleteTodo = async (eventDetails: TodoEventDetails) => {
       })
       .promise();
     console.log("Todo deleted:", JSON.stringify(deletedTodo, null, 4));
+    return deletedTodo.Attributes as Todo;
   } catch (error) {
     console.log("Dynamo DB Error", error);
     throw error;

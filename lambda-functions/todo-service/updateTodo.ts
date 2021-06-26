@@ -1,10 +1,11 @@
 import * as AWS from "aws-sdk";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import Todo from "./Todo";
 import TodoEventDetails from "./TodoEventDetails";
 var docClient = new AWS.DynamoDB.DocumentClient();
 // https://stackoverflow.com/a/65572954/288746
 
-const updateTodo = async (eventDetails: TodoEventDetails) => {
+const updateTodo = async (eventDetails: TodoEventDetails): Promise<Todo> => {
   const params: DocumentClient.UpdateItemInput = {
     TableName: process.env.TODOS_TABLE as string,
     Key: {
@@ -26,6 +27,7 @@ const updateTodo = async (eventDetails: TodoEventDetails) => {
     const updatedTodo = await docClient.update(params).promise();
 
     console.log("Todo updated:", JSON.stringify(updatedTodo, null, 4));
+    return updatedTodo.Attributes as Todo;
   } catch (error) {
     console.log("DynamoDB error: ", error);
     throw error;

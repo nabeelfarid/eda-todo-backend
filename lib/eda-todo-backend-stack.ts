@@ -174,7 +174,7 @@ export class EdaTodoBackendStack extends cdk.Stack {
       `${id}_lambda_todo_service`,
       {
         functionName: `${id}_lambda_todo_service`,
-        runtime: lambda.Runtime.NODEJS_12_X,
+        runtime: lambda.Runtime.NODEJS_14_X,
         code: lambda.Code.fromAsset("lambda-functions/todo-service"),
         handler: "main.handler",
         environment: {
